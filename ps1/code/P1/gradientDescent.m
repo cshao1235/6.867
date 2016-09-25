@@ -92,6 +92,10 @@ function v = approxGradient(fn, epsilon)
     v = @(x) out(x);
 end
 
+% Cost function of batch gradient 
+% X: matrix where columns are data points x^(i)
+% y: vector whose entries are data points y^(i)
+% return: a function f where f(theta) = sum |x^(i)*theta - y^(i)|^2
 function v = batchCost(X, y)
     function w = out(theta)
         n = length(theta);
@@ -144,7 +148,7 @@ function part3implementation()
 epsilon = 1.0e-6;
 batchErrorFn = batchCost(X,y);
 batchErrorFnGrad = approxGradient(batchErrorFn, epsilon);
-startPoint = [0;0;0;0;0;0;0;0;0;0];
+startPoint = zeros(size(X(1,:).')); % zero column matrix of size #columns of X
 stepSize = 2e-5;
 convergenceThreshold = 1e-6;
 v = gradientDescent_1(batchErrorFn, batchErrorFnGrad, startPoint, stepSize, convergenceThreshold);
@@ -153,6 +157,6 @@ end
 
 
 % call stuff here
-part1implementation_quadbowl()
+part3implementation()
 
 end
