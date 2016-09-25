@@ -22,13 +22,28 @@ function ridgeRegression()
     end
 
     function part1test()
-        x = [1;3;10];
-        y = [2;4;11];
+        X = [1;3;10];
+        Y = [2;4;11];
         maxDegree = 2;
         lambda = 0;
-        disp(ridgeRegressPolynomialBasis(x,y,maxDegree,lambda));
+        disp(ridgeRegressPolynomialBasis(X,Y,maxDegree,lambda));
+    end
+
+    function part1implementation()
+        [X,Y]=loadFittingDataP2(1);
+        disp(X.');
+        disp(Y.');
+        maxDegree = 3;
+        lambda = 0;
+        w = ridgeRegressPolynomialBasis(X.',Y.',maxDegree,lambda);
+        disp(w);
+
+        x = 0 : 0.01 : 1;
+        y = w(1) * 1 + w(2) * x.^1 + w(3) * x.^2;
+        plot(x,y)
+        %TODO: plot curve with data points??
     end
 
     % call stuff here
-    part1test();
+    part1implementation();
 end
