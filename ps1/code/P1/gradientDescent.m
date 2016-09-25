@@ -62,17 +62,26 @@ function v = approxGradient(fn, epsilon)
 v = @(x) out(x);
 end
 
+function part1implementation_gaussian()
+[gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
+myfn = mymvnpdf(gaussMean, gaussCov);
+myfngrad = mymvnpdfgrad(gaussMean, gaussCov);
+startPoint = [1; 19];
+stepSize = 1000000;
+convergenceThreshold = 1.0e-12;
+v = gradientDescent_1(myfn, myfngrad, startPoint, stepSize, convergenceThreshold);
+disp(v);
+end
+
+function part2implementation()
 [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
 myfn = mymvnpdf(gaussMean, gaussCov);
 myfngrad = mymvnpdfgrad(gaussMean, gaussCov);
 myfnapproxgrad = approxGradient(myfn,0.1);
-%disp(mvnpdf([9.9; 10.1], gaussMean, gaussCov));
 disp(myfngrad([40; 40]));
 disp(myfnapproxgrad([40; 40]));
-%startPoint = [1; 19];
-%stepSize = 1000000;
-%convergenceThreshold = 1.0e-12;
-%v = gradientDescent_1(mymvnpdf(gaussMean, gaussCov), mymvnpdfgrad(gaussMean, gaussCov), startPoint, stepSize, convergenceThreshold);
-%disp(v);
+end
+
+% call stuff here
 
 end
