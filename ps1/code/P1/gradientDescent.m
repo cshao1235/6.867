@@ -44,12 +44,34 @@ end
 % mean: mean vector of multivariate gaussian 
 % cov: covariance matrix of multivariate gaussian
 % return: a function f such that f(x) is gradient(Gaussian(mean, cov))(x)
-function v = mymvnpdfgrad(mean, cov)
+function v = mymvnpdfGrad(mean, cov)
     function w = out(x)
         f = mymvnpdf(mean, cov);
         w = -f(x)*inv(cov)*(x - mean);
     end
     v = @(x) out(x);
+end
+
+% outputs a quadratic bowl
+% A: matrix that determines quadratic term
+% b: vector that determines linear term
+% return: a function f such that f(x) is quadraticBowl(A, b)(x)
+function v = myQuadBowl(A, b)
+    function w = out(x)
+        w = 1/2*x.'*A*x - x.'*b;
+    end
+v = @(x) out(x);
+end
+
+% outputs a quadratic bowl's gradient
+% A: matrix that determines quadratic term
+% b: vector that determines linear term
+% return: a function f such that f(x) is gradient(quadraticBowl(A, b)(x))
+function v = myQuadBowlGrad(A, b)
+    function w = out(x)
+        w = A*x - b;
+    end
+v = @(x) out(x);
 end
 
 % outputs an approximation of a function's gradient
@@ -89,21 +111,32 @@ end
 function part1implementation_gaussian()
 [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
 myfn = mymvnpdf(gaussMean, gaussCov);
-myfngrad = mymvnpdfgrad(gaussMean, gaussCov);
+myfnGrad = mymvnpdfGrad(gaussMean, gaussCov);
 startPoint = [1; 19];
 stepSize = 1000000;
 convergenceThreshold = 1.0e-12;
-v = gradientDescent_1(myfn, myfngrad, startPoint, stepSize, convergenceThreshold);
+v = gradientDescent_1(myfn, myfnGrad, startPoint, stepSize, convergenceThreshold);
+disp(v);
+end
+
+function part1implementation_quadbowl()
+[gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
+myfn = myQuadBowl(quadBowlA, quadBowlb);
+myfnGrad = myQuadBowlGrad(quadBowlA, quadBowlb);
+startPoint = [1; 30];
+stepSize = 1.0e-3;
+convergenceThreshold = 1.0e-4;
+v = gradientDescent_1(myfn, myfnGrad, startPoint, stepSize, convergenceThreshold);
 disp(v);
 end
 
 function part2implementation()
 [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
 myfn = mymvnpdf(gaussMean, gaussCov);
-myfngrad = mymvnpdfgrad(gaussMean, gaussCov);
-myfnapproxgrad = approxGradient(myfn,0.1);
-disp(myfngrad([40; 40]));
-disp(myfnapproxgrad([40; 40]));
+myfnGrad = mymvnpdfGrad(gaussMean, gaussCov);
+myfnApproxGrad = approxGradient(myfn,0.1);
+disp(myfnGrad([40; 40]));
+disp(myfnApproxGrad([40; 40]));
 end
 
 function part3implementation()
@@ -120,6 +153,6 @@ end
 
 
 % call stuff here
-part3implementation();
+part1implementation_quadbowl()
 
 end
