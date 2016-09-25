@@ -11,10 +11,18 @@ function gradientDescent()
 function w = gradientDescent_1(fn, grad, startPoint, stepSize, convergenceThreshold)
 currentPoint = startPoint;
 while (norm(grad(currentPoint)) > convergenceThreshold)
-    disp(111111111111111111111);
-    disp(currentPoint);
-    disp(norm(currentPoint));
-    disp(grad(norm(currentPoint)));
+%    a = 'at point';
+%    b = 'cost is';
+%    c = 'gradient is';
+%    d = 'gradient norm is';
+%    disp(a);
+%    disp(currentPoint.');
+%    disp(b);
+%    disp(fn(currentPoint).');
+%    disp(c);
+%    disp(grad(currentPoint).');
+%    disp(d);
+%    disp(norm(grad(currentPoint)));
     currentPoint = currentPoint - stepSize*grad(currentPoint);
 end
 w = currentPoint;
@@ -29,7 +37,7 @@ n = size(cov, 1);
     function w = out(x)
         w = -1/sqrt((2*pi)^n*det(cov))*exp(-1/2*(x - mean).'*inv(cov)*(x - mean));
     end
-v = @(x) out(x);
+    v = @(x) out(x);
 end
 
 % outputs a multivariate gaussian distribution's gradient
@@ -41,7 +49,7 @@ function v = mymvnpdfgrad(mean, cov)
         f = mymvnpdf(mean, cov);
         w = -f(x)*inv(cov)*(x - mean);
     end
-v = @(x) out(x);
+    v = @(x) out(x);
 end
 
 % outputs an approximation of a function's gradient
@@ -59,7 +67,23 @@ function v = approxGradient(fn, epsilon)
         end
         w = grad;
     end
-v = @(x) out(x);
+    v = @(x) out(x);
+end
+
+function v = batchCost(X, y)
+    function w = out(theta)
+        n = length(theta);
+        cumulSum = 0;
+        for k = 1:n
+            x = X(k,:);
+            cumulSum = cumulSum + (x * theta - y(k))^2;
+            %disp(size(x * theta))
+            %cumulSum = 0;
+            %disp(x * theta);
+        end
+        w = cumulSum;
+    end
+    v = @(theta) out(theta);
 end
 
 function part1implementation_gaussian()
@@ -82,6 +106,20 @@ disp(myfngrad([40; 40]));
 disp(myfnapproxgrad([40; 40]));
 end
 
+function part3implementation()
+[X,y] = loadFittingDataP1();
+epsilon = 1.0e-6;
+batchErrorFn = batchCost(X,y);
+batchErrorFnGrad = approxGradient(batchErrorFn, epsilon);
+startPoint = [0;0;0;0;0;0;0;0;0;0];
+stepSize = 2e-5;
+convergenceThreshold = 1e-6;
+v = gradientDescent_1(batchErrorFn, batchErrorFnGrad, startPoint, stepSize, convergenceThreshold);
+disp(v);
+end
+
+
 % call stuff here
+part3implementation();
 
 end
