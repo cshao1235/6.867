@@ -21,22 +21,26 @@ function ridgeRegression()
         v = ridgeRegress(Phi, y, lambda);
     end
 
-    function part1test()
-        X = [1;3;10];
-        Y = [2;4;11];
-        dimension = 2;
-        lambda = 2;
-        disp(ridgeRegressPolynomialBasis(X,Y,dimension,lambda));
+    function v = squareError(X, Y, w)
+        cost = 0;
+        for i = 1:length(Y)
+            phi_x = zeros([1 length(w)]);
+            for j = 1:length(w)
+                phi_x(j) = X(i)^(j-1);
+            end
+            cost = cost + (phi_x*w - Y(i))^2;
+        end
+        v = cost;
     end
 
     function part1implementation()
-        
         [X,Y]=loadFittingDataP2(0);
-        dimension = 11;
-        lambda = 1e-4;
-        w = ridgeRegressPolynomialBasis(X.',Y.',dimension,lambda);
+        M = 10;
+        lambda = 1e-2;
+        w = ridgeRegressPolynomialBasis(X.',Y.',M,lambda);
         disp(w);
-
+        disp(squareError(X.',Y.',w));
+        
         % plotting stuff
         hold on;
         plot(X.', Y.', 'o', 'MarkerSize', 8);
@@ -44,7 +48,65 @@ function ridgeRegression()
 
         x = 0 : 0.01 : 1;
         y = 0;
-        for i = 1:dimension
+        for i = 1:M
+            y = y + w(i) * x.^(i-1);
+        end
+        plot(x,y);
+        hold off;
+    end
+
+    function part2implementation_ATrain()
+        [AX,AY]=regressAData();
+        [BX,BY]=regressBData();
+        [VX,VY]=validateData();
+        
+        M = 9;
+        lambda = .1;
+        w = ridgeRegressPolynomialBasis(AX.',AY.',M,lambda);
+        disp(w);
+        disp(squareError(AX.',AY.',w));
+        disp(squareError(BX.',BY.',w));
+        %disp(squareError(VX.',VY.',w));
+        
+        % plotting stuff
+        hold on;
+        plot(AX.', AY.', 'o', 'MarkerSize', 8);
+        plot(BX.', BY.', 'x', 'MarkerSize', 8);
+        plot(VX.', VY.', '*', 'MarkerSize', 8);
+        xlabel('x'); ylabel('y');
+
+        x = -3 : 0.01 : 2.5;
+        y = 0;
+        for i = 1:M
+            y = y + w(i) * x.^(i-1);
+        end
+        plot(x,y);
+        hold off;
+    end
+
+    function part2implementation_BTrain()
+        [AX,AY]=regressAData();
+        [BX,BY]=regressBData();
+        [VX,VY]=validateData();
+        
+        M = 9;
+        lambda = .1;
+        w = ridgeRegressPolynomialBasis(BX.',BY.',M,lambda);
+        disp(w);
+        disp(squareError(AX.',AY.',w));
+        disp(squareError(BX.',BY.',w));
+        %disp(squareError(VX.',VY.',w));
+        
+        % plotting stuff
+        hold on;
+        plot(AX.', AY.', 'o', 'MarkerSize', 8);
+        plot(BX.', BY.', 'x', 'MarkerSize', 8);
+        plot(VX.', VY.', '*', 'MarkerSize', 8);
+        xlabel('x'); ylabel('y');
+
+        x = -3 : 0.01 : 2.5;
+        y = 0;
+        for i = 1:M
             y = y + w(i) * x.^(i-1);
         end
         plot(x,y);
@@ -52,5 +114,5 @@ function ridgeRegression()
     end
 
     % call stuff here
-    part1implementation();
+    part2implementation_ATrain();
 end
