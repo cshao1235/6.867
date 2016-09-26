@@ -11,10 +11,10 @@ function ridgeRegression()
     end
 
     
-    function v = ridgeRegressPolynomialBasis(x, y, maxDegree, lambda)
-        Phi = zeros([length(y) maxDegree]);
+    function v = ridgeRegressPolynomialBasis(x, y, dimension, lambda)
+        Phi = zeros([length(y) dimension]);
         for i=1:length(y)
-            for j=1:maxDegree
+            for j=1:dimension
                 Phi(i,j)=x(i)^(j-1);
             end
         end
@@ -24,24 +24,31 @@ function ridgeRegression()
     function part1test()
         X = [1;3;10];
         Y = [2;4;11];
-        maxDegree = 2;
-        lambda = 0;
-        disp(ridgeRegressPolynomialBasis(X,Y,maxDegree,lambda));
+        dimension = 2;
+        lambda = 2;
+        disp(ridgeRegressPolynomialBasis(X,Y,dimension,lambda));
     end
 
     function part1implementation()
-        [X,Y]=loadFittingDataP2(1);
-        disp(X.');
-        disp(Y.');
-        maxDegree = 3;
-        lambda = 0;
-        w = ridgeRegressPolynomialBasis(X.',Y.',maxDegree,lambda);
+        
+        [X,Y]=loadFittingDataP2(0);
+        dimension = 11;
+        lambda = 1e-4;
+        w = ridgeRegressPolynomialBasis(X.',Y.',dimension,lambda);
         disp(w);
 
+        % plotting stuff
+        hold on;
+        plot(X.', Y.', 'o', 'MarkerSize', 8);
+        xlabel('x'); ylabel('y');
+
         x = 0 : 0.01 : 1;
-        y = w(1) * 1 + w(2) * x.^1 + w(3) * x.^2;
-        plot(x,y)
-        %TODO: plot curve with data points??
+        y = 0;
+        for i = 1:dimension
+            y = y + w(i) * x.^(i-1);
+        end
+        plot(x,y);
+        hold off;
     end
 
     % call stuff here
