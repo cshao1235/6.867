@@ -12,9 +12,9 @@ function ridgeRegression()
 
     
     function v = ridgeRegressPolynomialBasis(x, y, dimension, lambda)
-        Phi = zeros([length(y) dimension]);
+        Phi = zeros([length(y) dimension+1]);
         for i=1:length(y)
-            for j=1:dimension
+            for j=1:dimension+1
                 Phi(i,j)=x(i)^(j-1);
             end
         end
@@ -36,7 +36,7 @@ function ridgeRegression()
     function part1implementation()
         [X,Y]=loadFittingDataP2(0);
         M = 10;
-        lambda = 1e-2;
+        lambda = 1;
         w = ridgeRegressPolynomialBasis(X.',Y.',M,lambda);
         disp(w);
         disp(squareError(X.',Y.',w));
@@ -48,10 +48,12 @@ function ridgeRegression()
 
         x = 0 : 0.01 : 1;
         y = 0;
-        for i = 1:M
+        for i = 1:M+1
             y = y + w(i) * x.^(i-1);
         end
+        z = cos(pi*x) + cos(2*pi*x);
         plot(x,y);
+        plot(x,z);
         hold off;
     end
 
@@ -114,5 +116,6 @@ function ridgeRegression()
     end
 
     % call stuff here
-    part2implementation_ATrain();
+    %part2implementation_ATrain();
+    part1implementation();
 end

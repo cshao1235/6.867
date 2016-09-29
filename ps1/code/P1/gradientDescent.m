@@ -10,6 +10,7 @@ function gradientDescent()
 % return: point where gradient descent terminated
 function w = gradientDescent_1(fn, grad, startPoint, stepSize, convergenceThreshold)
     currentPoint = startPoint;
+    count = 0;
     while (norm(grad(currentPoint)) > convergenceThreshold)
         %    a = 'at point';
         %    b = 'cost is';
@@ -23,8 +24,13 @@ function w = gradientDescent_1(fn, grad, startPoint, stepSize, convergenceThresh
         %    disp(grad(currentPoint).');
         %    disp(d);
         %    disp(norm(grad(currentPoint)));
+        count = count+1;
+        %    disp(count);
+        %    disp(currentPoint);
+        %    disp(grad(currentPoint));
         currentPoint = currentPoint - stepSize*grad(currentPoint);
     end
+    disp(count);
     w = currentPoint;
 end
 
@@ -127,22 +133,22 @@ function part1implementation_gaussian()
     [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
     myfn = mymvnpdf(gaussMean, gaussCov);
     myfnGrad = mymvnpdfGrad(gaussMean, gaussCov);
-    startPoint = [1; 19];
-    stepSize = 1000000;
-    convergenceThreshold = 1.0e-12;
+    startPoint = [0;0];
+    stepSize = 1e6;
+    convergenceThreshold = 1e-11;
     v = gradientDescent_1(myfn, myfnGrad, startPoint, stepSize, convergenceThreshold);
-    disp(v);
+    disp(norm(v-[10;10]));
 end
 
 function part1implementation_quadbowl()
     [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
     myfn = myQuadBowl(quadBowlA, quadBowlb);
     myfnGrad = myQuadBowlGrad(quadBowlA, quadBowlb);
-    startPoint = [1; 30];
-    stepSize = 1.0e-3;
-    convergenceThreshold = 1.0e-4;
+    startPoint = [0; 0];
+    stepSize = 1e-2;
+    convergenceThreshold = 1e-3;
     v = gradientDescent_1(myfn, myfnGrad, startPoint, stepSize, convergenceThreshold);
-    disp(v);
+    disp(norm(v-[80/3;80/3]));
 end
 
 function part2implementation()
@@ -222,8 +228,337 @@ end
 
 
 
+
+
+%Finds the x for which fn(x) is minimal by gradient descent
+% fn: the (scalar) function to be minimized
+% grad: a (vector) function, equal to the gradient of fn or an approximation
+% startPoint: starting point for gradient descent
+% step size: learning rate, so each step is stepSize * gradient(point)
+% convergenceThreshold: determines when algorithm stops.  We terminate when
+% |grad(point)| < convergenceThreshold
+% return: (point where gradient descent terminated, # iterations)
+function w = gradientDescent_2(fn, grad, startPoint, stepSize, convergenceThreshold,actualAnswer)
+    currentPoint = startPoint;
+    count = 0;
+    while (norm(grad(currentPoint)) > convergenceThreshold)
+        count = count+1;
+        if (count==5000)
+            break;
+        end
+        currentPoint = currentPoint - stepSize*grad(currentPoint);
+    end
+    if norm(currentPoint-actualAnswer) > 1e20
+        w = [NaN; count];
+    else
+        w = [norm(currentPoint-actualAnswer); count];
+    end
+end
+
+function part1implementation_gaussian_x()
+    [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
+    myfn = mymvnpdf(gaussMean, gaussCov);
+    myfnGrad = mymvnpdfGrad(gaussMean, gaussCov);
+    startPoint = [0;0];
+    stepSize = 1e6;
+    convergenceThreshold = 1e-9;
+    %validlambda = [3e5;1e6;1e6;1e7;3e7;1e8];
+    
+    predists = zeros([101 1]);
+    dists = zeros([101 1]);
+    iterations = zeros([101 1]);
+    
+    for i = 0:100    
+        disp(i);
+        
+        predist = 10^(0.03*i);
+        predists(i+1)=predist;
+        
+        startPoint = [10+predist/2^0.5; 10+predist/2^0.5];
+        
+        v = gradientDescent_2(myfn, myfnGrad, startPoint, stepSize, convergenceThreshold, [10;10]);
+        disp(v);
+    
+        iterations(i+1) = v(2);
+        disp(v(2));
+        
+        dists(i+1) = v(1);
+        disp(v(1));
+%        disp(norm(v(1)-[10;10])); 
+        
+    end
+    
+    disp(predists);
+    disp(iterations);
+    disp(dists);
+
+    title('Mutivariate Gaussian - varying start point');
+    set(gca,'xscale','log');
+    xlabel('distance from start point to goal'); 
+    
+    yyaxis left;
+    loglog(predists, iterations, 'o', 'MarkerSize', 5);
+    ylabel('iterations');
+    
+    yyaxis right;
+    loglog(predists, dists, 'x', 'MarkerSize', 5);
+    ylabel('accuracy');
+
+end
+
+function part1implementation_gaussian_lambda()
+    [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
+    myfn = mymvnpdf(gaussMean, gaussCov);
+    myfnGrad = mymvnpdfGrad(gaussMean, gaussCov);
+    startPoint = [0;0];
+    stepSize = 1e6;
+    convergenceThreshold = 1e-9;
+    %validlambda = [3e5;1e6;1e6;1e7;3e7;1e8];
+    
+    lambdas = zeros([101 1]);
+    dists = zeros([101 1]);
+    iterations = zeros([101 1]);
+    
+    for i = 0:100    
+        disp(i);
+        
+        stepSize = 10^(5+0.03*i);
+        lambdas(i+1)=stepSize;
+        
+        v = gradientDescent_2(myfn, myfnGrad, startPoint, stepSize, convergenceThreshold, [10;10]);
+        disp(v);
+    
+        iterations(i+1) = v(2);
+        disp(v(2));
+        
+        dists(i+1) = v(1);
+        disp(v(1));
+%        disp(norm(v(1)-[10;10])); 
+        
+    end
+    
+    disp(lambdas);
+    disp(iterations);
+    disp(dists);
+
+    title('Mutivariate Gaussian - varying step size');
+    set(gca,'xscale','log');
+    xlabel('step size'); 
+    
+    yyaxis left;
+    loglog(lambdas, iterations, 'o', 'MarkerSize', 5);
+    ylabel('iterations');
+    
+    yyaxis right;
+    loglog(lambdas, dists, 'x', 'MarkerSize', 5);
+    ylabel('accuracy');
+
+end
+
+
+function part1implementation_gaussian_epsilon()
+    [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
+    myfn = mymvnpdf(gaussMean, gaussCov);
+    myfnGrad = mymvnpdfGrad(gaussMean, gaussCov);
+    startPoint = [0;0];
+    stepSize = 1e6;
+    convergenceThreshold = 1e-9;
+    %validlambda = [3e5;1e6;1e6;1e7;3e7;1e8];
+    
+    epsilons = zeros([101 1]);
+    dists = zeros([101 1]);
+    iterations = zeros([101 1]);
+    
+    for i = 0:100    
+        disp(i);
+        
+        convergenceThreshold = 10^(-12+0.06*i);
+        epsilons(i+1)=convergenceThreshold;
+        
+        v = gradientDescent_2(myfn, myfnGrad, startPoint, stepSize, convergenceThreshold,[10;10]);
+        disp(v);
+    
+        iterations(i+1) = v(2);
+        disp(v(2));
+        
+        dists(i+1) = v(1);
+        disp(v(1));
+%        disp(norm(v(1)-[10;10])); 
+        
+    end
+    
+    disp(epsilons);
+    disp(iterations);
+    disp(dists);
+
+    title('Mutivariate Gaussian - varying convergence threshold');
+    set(gca,'xscale','log');
+    xlabel('convergence threshold'); 
+    
+    yyaxis left;
+    loglog(epsilons, iterations, 'o', 'MarkerSize', 5);
+    ylabel('iterations');
+    
+    yyaxis right;
+    loglog(epsilons, dists, 'x', 'MarkerSize', 5);
+    ylabel('accuracy');
+
+end
+
+function part1implementation_quadbowl_x()
+    [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
+    myfn = myQuadBowl(quadBowlA, quadBowlb);
+    myfnGrad = myQuadBowlGrad(quadBowlA, quadBowlb);
+    startPoint = [0; 0];
+    stepSize = 1e-2;
+    convergenceThreshold = 1;
+   
+    predists = zeros([101 1]);
+    dists = zeros([101 1]);
+    iterations = zeros([101 1]);
+    
+    for i = 0:100    
+        disp(i);
+        
+        predist = 10^(0.05*i);
+        predists(i+1)=predist;
+        
+        startPoint = [10+predist/2^0.5; 10+predist/2^0.5];
+        
+        v = gradientDescent_2(myfn, myfnGrad, startPoint, stepSize, convergenceThreshold, [80/3;80/3]);
+        disp(v);
+    
+        iterations(i+1) = v(2);
+        disp(v(2));
+        
+        dists(i+1) = v(1);
+        disp(v(1));
+%        disp(norm(v(1)-[10;10])); 
+        
+    end
+    
+    disp(predists);
+    disp(iterations);
+    disp(dists);
+
+    title('Quadratic Bowl - varying start point');
+    set(gca,'xscale','log');
+    xlabel('distance from start point to goal'); 
+    
+    yyaxis left;
+    loglog(predists, iterations, 'o', 'MarkerSize', 5);
+    ylabel('iterations');
+    
+    yyaxis right;
+    loglog(predists, dists, 'x', 'MarkerSize', 5);
+    ylabel('accuracy');
+
+end
+
+function part1implementation_quadbowl_lambda()
+    [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
+    myfn = myQuadBowl(quadBowlA, quadBowlb);
+    myfnGrad = myQuadBowlGrad(quadBowlA, quadBowlb);
+    startPoint = [0; 0];
+    stepSize = 1e-2;
+    convergenceThreshold = 1;
+   
+    lambdas = zeros([101 1]);
+    dists = zeros([101 1]);
+    iterations = zeros([101 1]);
+    
+    for i = 0:100    
+        disp(i);
+        
+        stepSize = 10^(-3+0.03*i);
+        lambdas(i+1)=stepSize;
+        
+        v = gradientDescent_2(myfn, myfnGrad, startPoint, stepSize, convergenceThreshold,[80/3;80/3]);
+        disp(v);
+    
+        iterations(i+1) = v(2);
+        disp(v(2));
+        
+        dists(i+1) = v(1);
+        disp(v(1));
+%        disp(norm(v(1)-[10;10])); 
+        
+    end
+    
+    disp(lambdas);
+    disp(iterations);
+    disp(dists);
+
+    title('Quadratic Bowl - varying step size');
+    set(gca,'xscale','log');
+    xlabel('step size'); 
+    
+    yyaxis left;
+    loglog(lambdas, iterations, 'o', 'MarkerSize', 5);
+    ylabel('iterations');
+    
+    yyaxis right;
+    loglog(lambdas, dists, 'x', 'MarkerSize', 5);
+    ylabel('accuracy');
+
+end
+
+function part1implementation_quadbowl_epsilon()
+    [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
+    myfn = myQuadBowl(quadBowlA, quadBowlb);
+    myfnGrad = myQuadBowlGrad(quadBowlA, quadBowlb);
+    startPoint = [0; 0];
+    stepSize = 1e-2;
+    convergenceThreshold = 1;
+   
+    epsilons = zeros([101 1]);
+    dists = zeros([101 1]);
+    iterations = zeros([101 1]);
+    
+    for i = 0:100    
+        disp(i);
+        
+        convergenceThreshold = 10^(-4+0.06*i);
+        epsilons(i+1)=convergenceThreshold;
+        
+        v = gradientDescent_2(myfn, myfnGrad, startPoint, stepSize, convergenceThreshold,[80/3;80/3]);
+        disp(v);
+    
+        iterations(i+1) = v(2);
+        disp(v(2));
+        
+        dists(i+1) = v(1);
+        disp(v(1));
+%        disp(norm(v(1)-[10;10])); 
+        
+    end
+    
+    disp(epsilons);
+    disp(iterations);
+    disp(dists);
+
+    title('Quadratic Bowl - varying convergence threshold');
+    set(gca,'xscale','log');
+    xlabel('convergence threshold'); 
+    
+    yyaxis left;
+    loglog(epsilons, iterations, 'o', 'MarkerSize', 5);
+    ylabel('iterations');
+    
+    yyaxis right;
+    loglog(epsilons, dists, 'x', 'MarkerSize', 5);
+    ylabel('accuracy');
+
+end
+
+
+
+
+
 % call stuff here
-part3implementation_batch()
-part3implementation_stochastic()
+%part3implementation_batch()
+%part3implementation_stochastic()
+
+part1implementation_quadbowl_x();
 
 end
