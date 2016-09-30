@@ -118,7 +118,60 @@ function linearBasisRegression()
     % STUFF FOR PART 3 %
     %%%%%%%%%%%%%%%%%%%%
 
-    %TODO
+    function w = gradientDescent_3(fn, grad, startPoint, stepSize, convergenceThreshold)
+        currentPoint = startPoint;
+        prevPoint = currentPoint;
+        count = 0;
+        X = zeros([10000 0]);
+        Y = zeros([10000 0]);
+        while (count == 0 || abs(fn(prevPoint) - fn(currentPoint)) > convergenceThreshold)
+            count = count+1;
+%             if (count==10000)
+%                 break;
+%             end
+%             X(count)=count;
+%             Y(count)=fn(currentPoint);
+            prevPoint=currentPoint;
+            currentPoint = currentPoint - stepSize*grad(currentPoint);
+        end
+        
+        w = currentPoint;
+
+%         disp('hello');
+%         disp(count);
+% 
+%         hold on;
+%         title('Performance of Batch Gradient Descent');
+%         set(gca,'yscale','log');
+%         xlabel('iterations'); 
+% 
+%         semilogy(X(1:count).', Y(1:count).', 'x', 'MarkerSize', 1);
+%         ylabel('cost');    
+%         hold off;
+    end
+
+    function sumSquaresErrorBatchGradientDescent()
+        [X, Y] = loadFittingDataP2(0);
+        M = 10;
+        epsilon = 10e-6;
+        sumSquaresFn = @(w) sumSquaresError(X, Y, w);
+        sumSquaresGrad = approxGradient(sumSquaresFn, epsilon);
+%         sumSquaresErrorGrad(X, Y, w);
+        stepSize = 10e-3;
+        convergenceThreshold = 10e-6;
+        startPoint = zeros([M 1]);
+        for i = 1:M
+            startPoint(i) = 0;
+        end
+        w = gradientDescent_3(sumSquaresFn, sumSquaresGrad, startPoint, stepSize, convergenceThreshold);
+        disp(w);
+        disp(sumSquaresFn(w));
+        disp(sumSquaresGrad(w));
+        hold on;
+        plotPoints(X, Y);
+        plotPolynomial(w);
+        hold off;
+    end
     
     %%%%%%%%%%%%%%%%%%%%
     % STUFF FOR PART 4 %
@@ -186,7 +239,7 @@ function linearBasisRegression()
         disp(sumSquaresError(X,Y,w));
         disp(sumSquaresErrorGrad(X,Y,w));
         disp(approxSumSquaresErrorGrad(w));
-    end
+    end 
 
     function part4implementation()
         [X,Y]=loadFittingDataP2(0);
@@ -203,6 +256,9 @@ function linearBasisRegression()
         hold off;
     end
 
-    part1implementation();
+
+%    part1implementation();
+    sumSquaresErrorBatchGradientDescent();
+%     part2implementation();
 
 end
