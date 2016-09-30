@@ -31,6 +31,7 @@ function w = gradientDescent_1(fn, grad, startPoint, stepSize, convergenceThresh
         currentPoint = currentPoint - stepSize*grad(currentPoint);
     end
     disp(count);
+    disp(currentPoint);
     w = currentPoint;
 end
 
@@ -151,93 +152,6 @@ function part1implementation_quadbowl()
     disp(norm(v-[80/3;80/3]));
 end
 
-function part2implementation()
-    [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
-    myfn = mymvnpdf(gaussMean, gaussCov);
-    myfnGrad = mymvnpdfGrad(gaussMean, gaussCov);
-    myfnApproxGrad = approxGradient(myfn,0.1);
-    disp(myfnGrad([40; 40]));
-    disp(myfnApproxGrad([40; 40]));
-end
-
-function part3implementation_batch()
-    [X,y] = loadFittingDataP1();
-    epsilon = 1.0e-6;
-    batchErrorFn = batchCost(X,y);
-    batchErrorFnGrad = approxGradient(batchErrorFn, epsilon);
-    startPoint = zeros(size(X(1,:).')); % zero column matrix of size #columns of X
-    stepSize = 2e-5;
-    convergenceThreshold = 1e-6;
-    v = gradientDescent_1(batchErrorFn, batchErrorFnGrad, startPoint, stepSize, convergenceThreshold);
-    disp(v);
-end
-
-function part3implementation_stochastic()
-    [X,y] = loadFittingDataP1();
-    n = length(y);
-    epsilon = 1.0e-6;
-    startTheta = zeros(size(X(1,:).')); % zero column matrix of size #columns of X
-    convergenceThreshold = 1;
-    objectiveCost = batchCost(X, y);
-    objectiveGradient = approxGradient(objectiveCost,epsilon);
-    
-    theta = startTheta;
-    prevTheta = startTheta;
-    t = 0;
-    tau = 0;
-    kappa = .55;
-    
-    while (t== 0 || abs(objectiveCost(prevTheta) - objectiveCost(theta)) > convergenceThreshold)
-        t = t+1;
-        learningRate = 3e-5*(tau+t)^(-kappa);
-        for k = 1:n
-%            e = 'time is';
-%            a = 'at point';
-%            b = 'cost is';
-%            c = 'gradient is';
-%            d = 'gradient norm is';
-%            f = 'stochastic gradient norm is';
-%            g = 'learning rate is';
-%            disp(e);
-%            disp((t-1)*n + k);
-%            disp(a);
-%            disp(theta.');
-%            disp(b);
-%            disp(objectiveCost(theta).');
-%            disp(c);
-%            disp(objectiveGradient(theta).');
-%            disp(d);
-%            disp(norm(objectiveGradient(theta)));
-
-            xi = X(k, :);
-            yi = y(k);
-            cost = singlePointCost(xi,yi);    
-            gradCost =  approxGradient(cost, epsilon);
-
-%            disp(f);
-%            disp(norm(gradCost(theta)));
-%            disp(g);
-%            disp(learningRate);
-            
-            prevTheta = theta;
-            theta = theta - learningRate * gradCost(theta);
-        end
-    end
-    disp(theta);
-end
-
-
-
-
-
-%Finds the x for which fn(x) is minimal by gradient descent
-% fn: the (scalar) function to be minimized
-% grad: a (vector) function, equal to the gradient of fn or an approximation
-% startPoint: starting point for gradient descent
-% step size: learning rate, so each step is stepSize * gradient(point)
-% convergenceThreshold: determines when algorithm stops.  We terminate when
-% |grad(point)| < convergenceThreshold
-% return: (point where gradient descent terminated, # iterations)
 function w = gradientDescent_2(fn, grad, startPoint, stepSize, convergenceThreshold,actualAnswer)
     currentPoint = startPoint;
     count = 0;
@@ -354,7 +268,6 @@ function part1implementation_gaussian_lambda()
     ylabel('accuracy');
 
 end
-
 
 function part1implementation_gaussian_epsilon()
     [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
@@ -551,7 +464,130 @@ function part1implementation_quadbowl_epsilon()
 
 end
 
+function gradientDescent_3(fn, grad, startPoint, stepSize, convergenceThreshold)
+    currentPoint = startPoint;
+    prevPoint = currentPoint;
+    count = 0;
+    X = zeros([10000 0]);
+    Y = zeros([10000 0]);
+    while (count == 0 || abs(fn(prevPoint) - fn(currentPoint)) > convergenceThreshold)
+        count = count+1;
+        if (count==5000)
+            break;
+        end
+        X(count)=count;
+        Y(count)=fn(currentPoint);
+        prevPoint=currentPoint;
+        currentPoint = currentPoint - stepSize*grad(currentPoint);
+    end
+    
+    disp('hello');
+    disp(count);
+    
+    hold on;
+    title('Performance of Batch Gradient Descent');
+    set(gca,'yscale','log');
+    xlabel('iterations'); 
+    
+    semilogy(X(1:count).', Y(1:count).', 'x', 'MarkerSize', 1);
+    ylabel('cost');    
+    hold off;
+end
 
+function part1implementation_gaussian_grads()
+    [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
+    myfn = mymvnpdf(gaussMean, gaussCov);
+    myfnGrad = mymvnpdfGrad(gaussMean, gaussCov);
+    startPoint = [0;0];
+    stepSize = 1e6;
+    convergenceThreshold = 1e-9;
+    %validlambda = [3e5;1e6;1e6;1e7;3e7;1e8];
+
+    gradientDescent_3(myfn, myfnGrad, startPoint, stepSize, convergenceThreshold);
+end
+
+function part1implementation_quadbowl_grads()
+    [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
+    myfn = myQuadBowl(quadBowlA, quadBowlb);
+    myfnGrad = myQuadBowlGrad(quadBowlA, quadBowlb);
+    startPoint = [0; 0];
+    stepSize = 1e-2;
+    convergenceThreshold = 1;
+
+    gradientDescent_3(myfn, myfnGrad, startPoint, stepSize, convergenceThreshold);
+end
+
+function part2implementation()
+    [gaussMean, gaussCov, quadBowlA, quadBowlb] = loadParametersP1();
+    myfn = myQuadBowl(quadBowlA, quadBowlb);
+    myfnGrad = myQuadBowlGrad(quadBowlA, quadBowlb);
+    myfnApproxGrad = approxGradient(myfn,30);
+    disp(myfnGrad([0;0]).');
+    disp(myfnApproxGrad([0; 0]).');
+    disp(norm(myfnGrad([0;0]).'-myfnApproxGrad([0; 0]).'));
+end
+
+function part3implementation_batch()
+    [X,y] = loadFittingDataP1();
+    epsilon = 1.0e-6;
+    batchErrorFn = batchCost(X,y);
+    batchErrorFnGrad = approxGradient(batchErrorFn, epsilon);
+    startPoint = zeros(size(X(1,:).')); % zero column matrix of size #columns of X
+    stepSize = 6e-5;
+    convergenceThreshold = 1e-2;
+    gradientDescent_3(batchErrorFn, batchErrorFnGrad, startPoint, stepSize, convergenceThreshold);
+    %disp(v);
+end
+
+function part3implementation_stochastic()
+    [X,y] = loadFittingDataP1();
+    n = length(y);
+    epsilon = 1.0e-6;
+    startTheta = zeros(size(X(1,:).')); % zero column matrix of size #columns of X
+    convergenceThreshold = 1e-2;
+    objectiveCost = batchCost(X, y);
+    objectiveGradient = approxGradient(objectiveCost,epsilon);
+    
+    theta = startTheta;
+    prevTheta = startTheta;
+    t = 0;
+    tau = 0;
+    kappa = .55;
+    
+    XX = zeros([10000 0]);
+    YY = zeros([10000 0]);
+    
+    while (t== 0 || abs(objectiveCost(prevTheta) - objectiveCost(theta)) > convergenceThreshold)
+        t = t+1;
+        learningRate = 3e-5*(tau+t)^(-kappa);
+        for k = 1:n
+            XX((t-1)*n+k)=(t-1)*n+k;
+            YY((t-1)*n+k)=objectiveCost(theta);
+            
+            xi = X(k, :);
+            yi = y(k);
+            cost = singlePointCost(xi,yi);    
+            gradCost =  approxGradient(cost, epsilon);
+
+%            disp(f);
+%            disp(norm(gradCost(theta)));
+%            disp(g);
+%            disp(learningRate);
+            
+            prevTheta = theta;
+            theta = theta - learningRate * gradCost(theta);
+        end
+    end
+    disp(theta);
+    hold on;
+    title('Performance of Stochastic Gradient Descent');
+    set(gca,'yscale','log');
+    xlabel('iterations'); 
+    
+    semilogy(XX(1:t*n).', YY(1:t*n).', 'x', 'MarkerSize', 1);
+    ylabel('cost');    
+    hold off;
+end
 
 
 
@@ -559,6 +595,6 @@ end
 %part3implementation_batch()
 %part3implementation_stochastic()
 
-part1implementation_quadbowl_x();
+part3implementation_batch();
 
 end
