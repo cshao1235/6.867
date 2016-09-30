@@ -159,10 +159,10 @@ function linearBasisRegression()
     %does part 1 for various values M
     function part1implementation()
         [X,Y]=loadFittingDataP2(0);
-        w = linRegressPolynomial(X.',Y.',0); %<-- REPLACE 0 WITH DESIRED M
+        w = linRegressPolynomial(X.',Y.',10); %<-- REPLACE 0 WITH DESIRED M
         disp(w);
         hold on;
-        title('Linear Regression (M=0)'); %<-- REPLACE 0 WITH DESIRED M
+        title('Linear Regression (M=10)'); %<-- REPLACE 0 WITH DESIRED M
         plotTrueFunction();
         plotPoints(X,Y);
         plotPolynomial(w);
@@ -193,12 +193,16 @@ function linearBasisRegression()
         w = linRegressCosines(X.',Y.',8);
         disp(w); %<-- USE THIS TO ANSWER "how does weight vector compare to actual"
         hold on;
-        title('Linear Regression with Cosine Basis')
-        plotPoints(X,Y);
-        plotCosines(0,1,w);
+        title('Estimated Coefficients of Cosine Basis')
+        %plotPoints(X,Y);
+        %plotTrueFunction();
+        %plotCosines(w);
+        %w2 = [1;1;0;0;0;0;0;0];
+        bar(w);
+        %bar(w);
         hold off;
     end
 
-    part2implementation();
+    part1implementation();
 
 end

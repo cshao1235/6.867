@@ -33,7 +33,7 @@ function sparsityLASSO()
         l = 1;
         lambda = zeros([l 1]);
         for r = 1:l
-            lambda(r) = 10.0^(-r);
+            lambda(r) = 10.0^(-1-r);
         end
         w = lasso(X, y, 'Lambda', lambda);
         %lassoPlot(w);
@@ -71,7 +71,7 @@ function sparsityLASSO()
 %        stupidFit = ridgeRegress(X, y.', 1e-14);
 %        plotCurveGivenCoeffs(stupidFit);
         
-       legend('Training', 'Test', 'Validation', 'True value','LASSO', 'Ridge Regression');
+       legend('Training', 'Test', 'Validation', 'True value','LASSO, lambda=0.01', 'Ridge Regression, lambda = 0.01');
 %         legend('Training', 'Test', 'Validation', 'True Curve', 'LASSO, lambda=0.001', 'LASSO, lambda=0.01', 'LASSO, lambda=0.1', 'LASSO, lambda=1')
 %         hold off;
         ridge_w = ridgeRegress(X, y.', 100);
