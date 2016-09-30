@@ -122,10 +122,12 @@ function linearBasisRegression()
         currentPoint = startPoint;
         prevPoint = currentPoint;
         count = 0;
-        X = zeros([10000 0]);
-        Y = zeros([10000 0]);
+        X = zeros([100000 0]);
+        Y = zeros([100000 0]);
         while (count == 0 || abs(fn(prevPoint) - fn(currentPoint)) > convergenceThreshold)
             count = count+1;
+            X(count)=count;
+            Y(count)=fn(currentPoint);
 %             if (count==10000)
 %                 break;
 %             end
@@ -134,20 +136,20 @@ function linearBasisRegression()
             prevPoint=currentPoint;
             currentPoint = currentPoint - stepSize*grad(currentPoint);
         end
+
+%        disp('hello');
+%        disp(count);
+
+        hold on;
+        title('Performance of Batch Gradient Descent');
+        set(gca,'yscale','log');
+        xlabel('iterations'); 
+
+        semilogy(X(1:count).', Y(1:count).', 'x', 'MarkerSize', 1);
+        ylabel('cost');    
+        hold off;
         
         w = currentPoint;
-
-%         disp('hello');
-%         disp(count);
-% 
-%         hold on;
-%         title('Performance of Batch Gradient Descent');
-%         set(gca,'yscale','log');
-%         xlabel('iterations'); 
-% 
-%         semilogy(X(1:count).', Y(1:count).', 'x', 'MarkerSize', 1);
-%         ylabel('cost');    
-%         hold off;
     end
 
     function sumSquaresErrorBatchGradientDescent()
@@ -157,20 +159,20 @@ function linearBasisRegression()
         sumSquaresFn = @(w) sumSquaresError(X, Y, w);
         sumSquaresGrad = approxGradient(sumSquaresFn, epsilon);
 %         sumSquaresErrorGrad(X, Y, w);
-        stepSize = 10e-3;
-        convergenceThreshold = 10e-6;
+        stepSize = 4.1e-2;
+        convergenceThreshold = 1e-4;
         startPoint = zeros([M 1]);
         for i = 1:M
             startPoint(i) = 0;
         end
         w = gradientDescent_3(sumSquaresFn, sumSquaresGrad, startPoint, stepSize, convergenceThreshold);
         disp(w);
-        disp(sumSquaresFn(w));
-        disp(sumSquaresGrad(w));
-        hold on;
-        plotPoints(X, Y);
-        plotPolynomial(w);
-        hold off;
+%         disp(sumSquaresFn(w));
+%         disp(sumSquaresGrad(w));
+%         hold on;
+%         plotPoints(X, Y);
+%         plotPolynomial(w);
+%         hold off;
     end
     
     %%%%%%%%%%%%%%%%%%%%
