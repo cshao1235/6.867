@@ -19,14 +19,41 @@ gamma = 2^2;
 
 K = zeros(n,n);
 %%% TODO: Compute the kernel matrix %%%
-
+for i = 1:n
+    for j = 1:n
+        K(i, j) = exp(-1*gamma*(norm(X(i,:), X(j,:))*norm(X(i,:), X(j,:))));
+    end
+end
 %%% TODO: Implement train_gaussianSVM %%%
+function train_gaussianSVM(X, Y, lambda, epochs)
+    t = 0;
+    alphas = zeros(size(X, 2), 1);
+    epoch = 0;
+    while (epoch < epochs)
+        for i = 1:size(X, 1)
+            t = t + 1;
+            eta = 1/(t*lambda)
+            sum = 0;
+            for j = 1:size(X, 1)
+                sum = sum + alphas(j, 1)*K(j, i);
+            end
+            if(Y(i)*sum < 1)
+                alphas(i) = (1 - eta*lambda)*alphas(i) + eta*Y(i);
+            else
+                alphas(i) = (1 - eta*lambda)*alphas(i)
+            end
+        end
+        epoch = epoch + 1;
+    end
+end
+
 train_gaussianSVM(X, Y, lambda, epochs);
 
 
 % Define the predict_gaussianSVM(x) function, which uses trained parameters, alpha
-%%% TODO:  define predict_gaussianSVM(x) %%%
-
+function z = predict_gaussianSVM(x)
+    z = dot(
+end
 
 hold on;
 
