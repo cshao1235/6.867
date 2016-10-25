@@ -577,6 +577,7 @@ function part3implementation_stochastic()
             prevTheta = theta;
             theta = theta - learningRate * gradCost(theta);
         end
+        disp(gradCost(theta));
     end
     disp(theta);
     hold on;
@@ -593,8 +594,8 @@ end
 
 % call stuff here
 %part3implementation_batch()
-%part3implementation_stochastic()
+part3implementation_stochastic()
 
-part3implementation_batch();
+% part3implementation_batch();
 
 end

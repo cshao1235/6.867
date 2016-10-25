@@ -9,7 +9,7 @@ function linearBasisRegression()
     % return: value of w such that lambda * |w|^2 + sum_i |Phi(x)^(i)*w- 
     % y^(i)|^2 is minimized                                              
     function v = linRegress(Phi, y)
-        v = inv(Phi.' * Phi) * Phi.' * y;
+        v = (Phi.' * Phi)\Phi.' * y;
     end
 
     %plots cos(pi*x) + cos(2pi*x)
@@ -61,11 +61,11 @@ function linearBasisRegression()
     %x: input
     %w: represents polynomial w(1)+w(2)*x+w(3)*x^2+...
     function v = evalPolynomial(x, w);
-        ans=0;
+        s=0;
         for i = 1:length(w)
-            ans = ans + w(i)*x^(i-1);
+            s = s + w(i)*x^(i-1);
         end
-        v = ans;
+        v = s;
     end
     
     %X: x coordinates
@@ -135,44 +135,126 @@ function linearBasisRegression()
 %             Y(count)=fn(currentPoint);
             prevPoint=currentPoint;
             currentPoint = currentPoint - stepSize*grad(currentPoint);
+            g = grad(currentPoint);
+%             disp('point:');
+%             disp(currentPoint(10));
+% %             disp('grad');
+%             disp(g(10));
         end
-
+        disp(count);
 %        disp('hello');
 %        disp(count);
 
-        hold on;
-        title('Performance of Batch Gradient Descent');
-        set(gca,'yscale','log');
-        xlabel('iterations'); 
-
-        semilogy(X(1:count).', Y(1:count).', 'x', 'MarkerSize', 1);
-        ylabel('cost');    
-        hold off;
+%         hold on;
+%         title('Performance of Batch Gradient Descent');
+%         set(gca,'yscale','log');
+%         xlabel('iterations'); 
+% 
+%         semilogy(X(1:count).', Y(1:count).', 'x', 'MarkerSize', 1);
+%         ylabel('cost');    
+%         hold off;
         
         w = currentPoint;
     end
 
     function sumSquaresErrorBatchGradientDescent()
         [X, Y] = loadFittingDataP2(0);
-        M = 10;
+        MList = [1, 3, 5, 10];
         epsilon = 10e-6;
         sumSquaresFn = @(w) sumSquaresError(X, Y, w);
         sumSquaresGrad = approxGradient(sumSquaresFn, epsilon);
 %         sumSquaresErrorGrad(X, Y, w);
-        stepSize = 4.1e-2;
-        convergenceThreshold = 1e-4;
-        startPoint = zeros([M 1]);
-        for i = 1:M
-            startPoint(i) = 0;
+        stepSize = 4.1e-3;
+        convergenceThreshold = 1e-5;
+        hold on;
+        plotTrueFunction();
+        plotPoints(X, Y);
+        hold off;
+        for i = 1:length(MList)
+            M = MList(i);
+            startPoint = zeros([(M + 1) 1]);
+            for i = 1:(M + 1)
+                startPoint(i) = 1;
+            end
+            w = gradientDescent_3(sumSquaresFn, sumSquaresGrad, startPoint, stepSize, convergenceThreshold);
+            disp(w);
+            disp(sumSquaresFn(w));
+    %         disp(sumSquaresFn(w));
+    %         disp(sumSquaresGrad(w));
+             hold on;
+             plotPolynomial(w);
+             hold off;
         end
-        w = gradientDescent_3(sumSquaresFn, sumSquaresGrad, startPoint, stepSize, convergenceThreshold);
-        disp(w);
-%         disp(sumSquaresFn(w));
-%         disp(sumSquaresGrad(w));
-%         hold on;
-%         plotPoints(X, Y);
-%         plotPolynomial(w);
-%         hold off;
+        legend('True function', 'Data', 'M = 1', 'M = 3', 'M = 5', 'M = 10');
+    end
+
+    function sumSquaresErrorStochasticGradientDescent()
+        [X, Y] = loadFittingDataP2(0);
+        MList = [1, 3, 5, 10];
+        n = length(Y);
+        epsilon = 1.0e-6;
+        convergenceThreshold = 1e-2;
+        objectiveCost = @(w) sumSquaresError(X, Y, w);
+        objectiveGradient = approxGradient(objectiveCost,epsilon);
+        hold on;
+        plotTrueFunction();
+        plotPoints(X, Y);
+        hold off;
+        for i = 1:length(MList)
+            M = MList(i);
+            startTheta = zeros([(M + 1) 1]); % zero column matrix of size #columns of X
+            for j = 1:(M + 1)
+                startTheta(j) = 1;
+            end
+    %         startTheta(1) = 1;
+
+            theta = startTheta;
+            prevTheta = startTheta;
+            t = 0;
+            tau = 0;
+            kappa = .55;
+
+            XX = zeros([10000 0]);
+            YY = zeros([10000 0]);
+
+            while (t== 0 || abs(objectiveCost(prevTheta) - objectiveCost(theta)) > convergenceThreshold)
+                t = t+1;
+                learningRate = 0.8*(tau+t)^(-kappa);
+                for k = 1:n
+                    XX((t-1)*n+k)=(t-1)*n+k;
+                    YY((t-1)*n+k)=objectiveCost(theta);
+
+                    xi = X(k);
+                    yi = Y(k);
+                    cost = @(w) (evalPolynomial(xi, w) - yi)^2;
+                    gradCost =  approxGradient(cost, epsilon);
+
+        %            disp(f);
+        %            disp(norm(gradCost(theta)));
+        %            disp(g);
+        %            disp(learningRate);
+
+                    prevTheta = theta;
+                    theta = theta - learningRate * gradCost(theta);
+                end
+                disp(objectiveGradient(theta));
+            end
+            disp(objectiveCost(theta));
+            hold on;
+%             plotTrueFunction();
+%             plotPoints(X, Y);
+            plotPolynomial(theta);
+            hold off;
+            legend('True function', 'Data', 'M = 1', 'M = 3', 'M = 5', 'M = 10');
+    %         hold on;
+    %         title('Performance of Stochastic Gradient Descent');
+    %         set(gca,'yscale','log');
+    %         xlabel('iterations'); 
+    % 
+    %         semilogy(XX(1:t*n).', YY(1:t*n).', 'x', 'MarkerSize', 1);
+    %         ylabel('cost');    
+    %         hold off;
+        end
     end
     
     %%%%%%%%%%%%%%%%%%%%
@@ -214,10 +296,10 @@ function linearBasisRegression()
     %does part 1 for various values M
     function part1implementation()
         [X,Y]=loadFittingDataP2(0);
-        w = linRegressPolynomial(X.',Y.',10); %<-- REPLACE 0 WITH DESIRED M
+        w = linRegressPolynomial(X.',Y.',8); %<-- REPLACE 0 WITH DESIRED M
         disp(w);
         hold on;
-        title('Linear Regression (M=10)'); %<-- REPLACE 0 WITH DESIRED M
+        title('Linear Regression (M=0)'); %<-- REPLACE 0 WITH DESIRED M
         plotTrueFunction();
         plotPoints(X,Y);
         plotPolynomial(w);
@@ -259,8 +341,9 @@ function linearBasisRegression()
     end
 
 
-%    part1implementation();
+%      part1implementation();
     sumSquaresErrorBatchGradientDescent();
+%          sumSquaresErrorStochasticGradientDescent();
 %     part2implementation();
 
 end
